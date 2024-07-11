@@ -1,8 +1,8 @@
 # VERSION: 1.01
-# AUTHORS: txtsd (thexerothermicsclerodermoid@gmail.com)
+# AUTHORS: txtsd (thexerothermicsclerodermoid@gmail.com) : ripsnortntear (ripsnortntear@gmail.com)
 
-# iptorrents.py - A plugin for qBittorrent to search on iptorrents.com
-# Copyright (C) 2019  txtsd <thexerothermicsclerodermoid@gmail.com>
+# tday.py - A plugin for qBittorrent to search on torrentday.com
+# Copyright (C) 2024 ripsnortntear (ripsnortntear@gmail.com)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,18 +42,17 @@ class iptorrents(object):
     username = ""
     password = ""
     ###########################################################################
-    url = 'https://iptorrents.com'
-    name = 'IPTorrents'
+    url = 'https://td.venom.global'
+    name = 'TorrentDay'
     supported_categories = {
         'all': '',
-        'movies': '72',
-        'tv': '73',
-        'music': '75',
-        'games': '74',
-        'anime': '60',
-        'software': '1',
-        'pictures': '36',
-        'books': '35'
+        'movies': '-9',
+        'tv': '-8',
+        'music': '-6',
+        'games': '-7',
+        'anime': '29',
+        'software': '12',
+        'books': '20'
     }
 
     def __init__(self):
@@ -67,7 +66,7 @@ class iptorrents(object):
         self._login()
 
     def _login(self):
-        """Initiate a session and log into IPTorrents"""
+        """Initiate a session and log into TorrentDay"""
         # Build opener
         cj = CookieJar()
         params = {
@@ -115,7 +114,7 @@ class iptorrents(object):
         return data
 
     def search_parse(self, link, page=1):
-        """ Parses IPTorrents for search results and prints them"""
+        """ Parses TorrentDay for search results and prints them"""
         logging.debug("Parsing " + link)
         data = self._get_link(link + '&p=' + str(page))
         _tor_table = re.search('<form>(<table id=torrents.+?)</form>', data)
