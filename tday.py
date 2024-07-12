@@ -1,8 +1,8 @@
 # VERSION: 1.01
-# AUTHORS: txtsd (thexerothermicsclerodermoid@gmail.com) : ripsnortntear (ripsnortntear@gmail.com)
+# AUTHORS: txtsd (thexerothermicsclerodermoid@gmail.com)
 
-# tday.py - A plugin for qBittorrent to search on torrentday.com
-# Copyright (C) 2024 ripsnortntear (ripsnortntear@gmail.com)
+# iptorrents.py - A plugin for qBittorrent to search on iptorrents.com
+# Copyright (C) 2019  txtsd <thexerothermicsclerodermoid@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,26 +33,26 @@ from novaprinter import prettyPrinter
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-
 class iptorrents(object):
     # Login information ######################################################
     #
     # SET THESE VALUES!!
     #
-    username = ""
-    password = ""
+    username = "your_username"
+    password = "your_password"
     ###########################################################################
-    url = 'https://td.venom.global'
-    name = 'TorrentDay'
+    url = 'https://iptorrents.com'
+    name = 'IPTorrents'
     supported_categories = {
         'all': '',
-        'movies': '-9',
-        'tv': '-8',
-        'music': '-6',
-        'games': '-7',
-        'anime': '29',
-        'software': '12',
-        'books': '20'
+        'movies': '72',
+        'tv': '73',
+        'music': '75',
+        'games': '74',
+        'anime': '60',
+        'software': '1',
+        'pictures': '36',
+        'books': '35'
     }
 
     def __init__(self):
@@ -66,7 +66,7 @@ class iptorrents(object):
         self._login()
 
     def _login(self):
-        """Initiate a session and log into TorrentDay"""
+        """Initiate a session and log into IPTorrents"""
         # Build opener
         cj = CookieJar()
         params = {
@@ -114,82 +114,11 @@ class iptorrents(object):
         return data
 
     def search_parse(self, link, page=1):
-        """ Parses TorrentDay for search results and prints them"""
+        """ Parses IPTorrents for search results and prints them"""
         logging.debug("Parsing " + link)
         data = self._get_link(link + '&p=' + str(page))
         _tor_table = re.search('<form>(<table id=torrents.+?)</form>', data)
         tor_table = _tor_table.groups()[0] if _tor_table else None
 
         results = re.finditer(
-            r'<a class=" hv" href="(?P<desc_link>/details.+?)">(?P<name>.+?)</a>.+?href="(?P<link>/download.+?)".+?(?P<size>\d+?\.*?\d*? (|K|M|G)B)<.+?t_seeders">(?P<seeds>\d+).+?t_leechers">(?P<leech>\d+?)</t',
-            tor_table
-        )
-
-        for result in results:
-            entry = dict()
-            entry['link'] = self.url + quote(result.group('link'))
-            entry['name'] = result.group('name')
-            entry['size'] = result.group('size')
-            entry['seeds'] = result.group('seeds')
-            entry['leech'] = result.group('leech')
-            entry['engine_url'] = self.url
-            entry['desc_link'] = self.url + result.group('desc_link')
-            prettyPrinter(entry)
-
-        _num_pages = re.search(r'<a>Page <b>(\d+)</b> of <b>(\d+)</b>', data)
-        page = _num_pages.groups()[0] if _num_pages else None
-        num_pages = _num_pages.groups()[1] if _num_pages else None
-
-        if (page and num_pages) and (int(page) < int(num_pages)):
-            next_page = int(page) + 1
-            self.search_parse(link, next_page)
-
-    def download_torrent(self, info):
-        """
-        Downloads torrent to a temp file and loads it in qBittorrent
-        """
-        file, path = tempfile.mkstemp('.torrent')
-        url = info
-        # self._login()
-        try:
-            logging.debug("Trying to download " + url)
-            res = self.session.open(url)
-        except URLError as errno:
-            print("Connection Error: {} {}".format(errno.code, errno.reason))
-            return ""
-        data = res.read()
-        if data[:2] == b'\x1f\x8b':
-            # Data is gzip encoded, decode it
-            logging.debug("Data is gzip encoded, decode it")
-            compressedstream = io.BytesIO(data)
-            gzipper = gzip.GzipFile(fileobj=compressedstream)
-            extracted_data = gzipper.read()
-            data = extracted_data
-        with open(file, 'wb') as f:
-            f.write(data)
-        print(path + " " + url)
-
-    def search(self, what, cat='all'):
-        """
-        Formats url according to category and calls search_parse()
-        """
-        if cat == 'all':
-            url = "{0}/t?q={1}&o=seeders".format(
-                self.url,
-                what
-            )
-        else:
-            url = "{0}/t?{1}=&q={2}&o=seeders".format(
-                self.url,
-                self.supported_categories[cat],
-                what
-            )
-        self.search_parse(url)
-
-
-# For testing purposes.
-# Run with python -m engines.iptorrents
-if __name__ == "__main__":
-    engine = iptorrents()
-    engine.search('one+piece')
-    # engine.download_torrent('')
+            r'<a class=" hv" href="(?P<desc_link>/details.+?)">(?P<name>.+?)</a>.+?href="(?P<link>/download.+?)".+?(?P<size>\d+?\.*?\d*? (|K|M|G)B)<.+?t_seeders">(?P<seeds>\d+).+?t_leechers">(?P<leech>\d+?)
